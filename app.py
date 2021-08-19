@@ -47,12 +47,14 @@ async def bread_agent(jobs: HotDogJob):
         message.bread_type = 'Whole' if message.health else 'Milk'
         await sausage_channel.send(value=message)
 
+
 @app.agent(sausage_channel)
 async def sausage_agent(jobs: HotDogJob):
     async for message in jobs:
         logger.info(message)
         message.sausage_type = 'Vegan' if message.health else 'Pork'
         await style_channel.send(value=message)
+
 
 @app.agent(style_channel)
 async def style_agent(jobs: HotDogJob):
@@ -77,12 +79,28 @@ async def output_agent(jobs):
         message.finish_at = str(datetime.datetime.now())
         output_table[message.id] = message
 
+
 # 08 - Creating a web views
+# @app.page('/jobs/{id}')
+# @app.table_route(table=output_table, match_info='id')
+# async def get_hot_dog(web, request, id):
+#     return web.json({
+#         'hot_dog': output_table[id]
+#     })
 @app.page('/jobs/{id}')
-@app.table_route(table=output_table, match_info='id')
 async def get_hot_dog(web, request, id):
+    logger.info('GET HOTDOG')
     return web.json({
         'hot_dog': output_table[id]
+    })
+
+
+
+@app.page('/jobs/clear/')
+async def get_count(self, request):
+    output_table.clear()
+    return self.json({
+        'clear': True,
     })
 
 # 05 - Running Timers
